@@ -52,7 +52,7 @@ fn tip_text(ui: &Ui, tip: &str) -> String {
         None => name,
     };
     // A tooltip must not paint a tofu box on a host whose faces lack one of its symbols.
-    theme::available_text(ui, &text)
+    if text.chars().any(|c| theme::symbol_fallback(c).is_some()) { theme::available_text(ui, &text) } else { text }
 }
 
 /// A flat square icon button with hover highlight and tooltip.
