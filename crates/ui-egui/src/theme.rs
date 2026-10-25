@@ -774,26 +774,29 @@ fn linux_noto_dirs() -> [&'static str; 5] {
     ]
 }
 
+/// Faces for one script: Windows files under `WINDIR\Fonts` first, then macOS paths, then the
+/// Noto/Linux files in every [`linux_noto_dirs`] directory, then the Fedora variable font.
+#[cfg(not(target_arch = "wasm32"))]
+fn script_fonts(win: &[&str], mac: &[&str], lin_files: &[&str], variable: &str) -> Vec<(String, u32)> {
+    let w = windows_fonts();
+    let mut v: Vec<(String, u32)> = win.iter().map(|f| (format!("{w}\\{f}"), 0)).collect();
+    v.extend(mac.iter().map(|p| (p.to_string(), 0)));
+    v.extend(in_dirs(&linux_noto_dirs(), lin_files).into_iter().map(|p| (p, 0)));
+    v.push((variable.into(), 0));
+    v
+}
+
 /// macOS has Thonburi; Linux usually has Noto Sans Thai or Garuda.
 #[cfg(not(target_arch = "wasm32"))]
 fn thai() -> Vec<(String, u32)> {
-    let mac_sys = "/System/Library/Fonts";
-    let mac_sup = "/System/Library/Fonts/Supplemental";
-    let win = windows_fonts();
-    let lin = linux_noto_dirs();
-    let mut v: Vec<(String, u32)> = vec![
-        (format!("{win}\\LeelawUI.ttf"), 0), // Leelawadee UI
-        (format!("{win}\\tahoma.ttf"), 0),   // Tahoma
-        (format!("{win}\\micross.ttf"), 0),  // Microsoft Sans Serif
-        (format!("{mac_sup}/Thonburi.ttc"), 0),
-        (format!("{mac_sys}/SukhumvitSet.ttc"), 0),
-    ];
-    for p in in_dirs(&lin, &["NotoSansThai-Regular.ttf", "tlwg/Garuda.ttf", "garuda/Garuda.ttf"]) {
-        v.push((p, 0));
-    }
-    // Fedora ships the variable Noto Sans Thai; its default instance is Regular.
-    v.push(("/usr/share/fonts/google-noto-vf/NotoSansThai[wght].ttf".into(), 0));
-    v
+    script_fonts(
+        // Leelawadee UI, Tahoma, Microsoft Sans Serif
+        &["LeelawUI.ttf", "tahoma.ttf", "micross.ttf"],
+        &["/System/Library/Fonts/Supplemental/Thonburi.ttc", "/System/Library/Fonts/SukhumvitSet.ttc"],
+        &["NotoSansThai-Regular.ttf", "tlwg/Garuda.ttf", "garuda/Garuda.ttf"],
+        // Fedora ships the variable Noto Sans Thai; its default instance is Regular.
+        "/usr/share/fonts/google-noto-vf/NotoSansThai[wght].ttf",
+    )
 }
 
 /// Lao faces. Windows ships Leelawadee UI (and DokChampa on older versions); macOS has Lao Sangam
@@ -821,26 +824,20 @@ fn lao() -> Vec<(String, u32)> {
 /// Arial Hebrew and David; Linux usually has Noto Sans Hebrew or DejaVu Sans.
 #[cfg(not(target_arch = "wasm32"))]
 fn hebrew() -> Vec<(String, u32)> {
-    let mac_sys = "/System/Library/Fonts";
-    let mac_sup = "/System/Library/Fonts/Supplemental";
-    let win = windows_fonts();
-    let lin = linux_noto_dirs();
-    let mut v: Vec<(String, u32)> = vec![
-        (format!("{win}\\david.ttf"), 0),      // David
-        (format!("{win}\\frank.ttf"), 0),      // FrankRuehl
-        (format!("{win}\\tahoma.ttf"), 0),     // Tahoma
-        (format!("{mac_sys}/ArialHB.ttc"), 0), // Arial Hebrew
-        (format!("{mac_sys}/SFHebrew.ttf"), 0),
-        (format!("{mac_sup}/Arial Hebrew.ttf"), 0),
-        (format!("{mac_sup}/David.ttf"), 0),
-        (format!("{mac_sys}/LucidaGrande.ttc"), 0),
-        (format!("{mac_sys}/Lucida Grande.ttc"), 0),
-    ];
-    for p in in_dirs(&lin, &["NotoSansHebrew-Regular.ttf", "dejavu/DejaVuSans.ttf", "freefont/FreeSans.ttf"]) {
-        v.push((p, 0));
-    }
-    v.push(("/usr/share/fonts/google-noto-vf/NotoSansHebrew[wght].ttf".into(), 0));
-    v
+    script_fonts(
+        // David, FrankRuehl, Tahoma
+        &["david.ttf", "frank.ttf", "tahoma.ttf"],
+        &[
+            "/System/Library/Fonts/ArialHB.ttc",
+            "/System/Library/Fonts/SFHebrew.ttf",
+            "/System/Library/Fonts/Supplemental/Arial Hebrew.ttf",
+            "/System/Library/Fonts/Supplemental/David.ttf",
+            "/System/Library/Fonts/LucidaGrande.ttc",
+            "/System/Library/Fonts/Lucida Grande.ttc",
+        ],
+        &["NotoSansHebrew-Regular.ttf", "dejavu/DejaVuSans.ttf", "freefont/FreeSans.ttf"],
+        "/usr/share/fonts/google-noto-vf/NotoSansHebrew[wght].ttf",
+    )
 }
 
 /// Symbol faces behind the UI font. Interface fonts such as Noto Sans and Cantarell (and egui's
