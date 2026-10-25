@@ -1,6 +1,7 @@
 //! Desktop spooler adapter. Discovery and submission never run on the UI thread.
 use gridcraft_ui_egui::printing::{Discover, Duplex, Printer, Settings, Submit};
 
+/// Returns a printer-discovery closure that enumerates `craft_print::printers()` on a named background thread and sends the mapped list through a channel.
 pub fn discover() -> Discover {
     Box::new(|| {
         let (sender, receiver) = std::sync::mpsc::channel();

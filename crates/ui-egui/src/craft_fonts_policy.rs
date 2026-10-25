@@ -162,6 +162,7 @@ mod tests {
     const GOOD: &str = "NanumGothic | Regular | fonts/nanum-gothic/NanumGothic-Regular.ttf | Hang,Kore | OFL-1.1 | fonts/nanum-gothic/OFL.txt | 76f45ef4a6bcff344c837c95a7dcc26e017e38b5846d5ae0cdcb5b86be2e2d31 | https://example.invalid/nanum";
 
     #[test]
+    /// Asserts the exact web allowlist and that every entry is unbarred, required and not a CJK collection face.
     fn the_web_allowlist_is_exact_and_never_barred() {
         assert_eq!(
             WEB_ALLOWED,
@@ -181,6 +182,7 @@ mod tests {
     }
 
     #[test]
+    /// Adobe/Source and Noto CJK families are barred, while the permitted Noto Symbols, BIZ and Nanum faces are not.
     fn the_barred_prefixes_keep_the_permitted_noto_symbol_faces() {
         for family in ["Adobe Source Sans", "Source Han Sans", "Source Sans 3", "Source Serif 4", "Noto Sans CJK SC", "Noto Serif CJK JP"] {
             assert!(barred(family), "{family} must be barred");
@@ -191,6 +193,7 @@ mod tests {
     }
 
     #[test]
+    /// Only the exact string `"1"` enables required mode; absent and all other values leave it off.
     fn only_the_value_one_enables_required_mode() {
         assert!(!required_mode(None));
         for value in ["", "0", "00", "01", "false", "true", "yes"] {
@@ -200,6 +203,7 @@ mod tests {
     }
 
     #[test]
+    /// A complete eight-field row yields the expected family, style and script list.
     fn a_complete_manifest_row_parses() {
         let rows = parse_manifest(GOOD).unwrap_or_default();
         assert_eq!(rows.len(), 1);
@@ -208,6 +212,7 @@ mod tests {
     }
 
     #[test]
+    /// Missing fields, an empty file field, a bad hash and a non-ISO script tag are all rejected.
     fn malformed_rows_are_errors() {
         for bad in [
             "NanumGothic | Regular | fonts/x.ttf | Hang,Kore",
@@ -220,6 +225,7 @@ mod tests {
     }
 
     #[test]
+    /// One row cannot satisfy every required face; script order and exact tags are checked, and a required family in an unlisted style is rejected.
     fn required_faces_and_script_tags_are_checked() {
         let rows = parse_manifest(GOOD).unwrap_or_default();
         assert!(check_required(&rows).is_err(), "one row cannot satisfy every required face");
@@ -231,6 +237,7 @@ mod tests {
     }
 
     #[test]
+    /// LXGW is permitted but native-only; its script order and style are checked, and a required native build must include it.
     fn the_native_chinese_face_is_permitted_and_checked() {
         let chinese = "LXGW WenKai Lite | Regular | fonts/lxgw-wenkai-lite/LXGWWenKaiLite-Regular.ttf | Hani,Hans | OFL-1.1 | fonts/lxgw-wenkai-lite/OFL.txt | f799a538a3355877e597a0ae04050e897932c9ae7689eb9227c2953c5dd549ea | https://example.invalid/lxgw";
         let rows = parse_manifest(chinese).unwrap_or_default();
@@ -246,6 +253,7 @@ mod tests {
     }
 
     #[test]
+    /// Native embedding excludes the barred CJK face; web embedding keeps only allowlisted faces.
     fn web_embedding_keeps_only_the_allowlist() {
         let manifest = format!(
             "{GOOD}\nNoto Sans CJK SC | Regular | fonts/cjk.otf | Hans,Latn | OFL-1.1 | fonts/OFL.txt | 76f45ef4a6bcff344c837c95a7dcc26e017e38b5846d5ae0cdcb5b86be2e2d31 | https://example.invalid/cjk"

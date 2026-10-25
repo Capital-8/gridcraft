@@ -8,6 +8,7 @@ use gridcraft_ui_egui::i18n::Language;
 use gridcraft_ui_egui::{SheetApp, grid::Geo};
 use serde_json::json;
 
+/// Builds the standard interaction harness around the caller's session with four warm-up passes.
 fn harness(session: Session) -> egui_kittest::Harness<'static, SheetApp> {
     crate::support::harness(session, 4)
 }
@@ -201,6 +202,7 @@ fn space_toggles_the_active_checkbox_without_clicking_the_hovered_cell() {
 }
 
 #[test]
+/// Name Box Enter selects A1; the next grid Enter moves down to A2.
 fn name_box_enter_goes_to_the_typed_cell_not_the_one_below() {
     // #247: typing A1 in the Name Box and pressing Enter selected A2; the grid replayed the Enter.
     let mut h = harness(blank());
@@ -234,6 +236,7 @@ fn name_box_shows_a_name_defined_on_a_sheet_with_an_apostrophe() {
 }
 
 #[test]
+/// Typing and Enter commit 42 in A1; `=A1*2` and Tab commit 84 in A2 and move to B2, with accessibility checks.
 fn typing_enters_values_and_moves_down() {
     let mut h = harness(blank());
     text(&mut h, "42");
@@ -405,6 +408,7 @@ fn insert_column_or_bar_menu_inserts_a_hundred_percent_stacked_bar() {
 }
 
 #[test]
+/// Every main ribbon tab and dark mode render with accessibility checks.
 fn renders_every_ribbon_tab_without_panicking() {
     let mut s = Session::new();
     s.execute("file.new", json!({"sample": "sales"})).unwrap();
@@ -420,6 +424,7 @@ fn renders_every_ribbon_tab_without_panicking() {
 }
 
 #[test]
+/// Language commands are listed and every available locale renders and persists; CJK locales are omitted when craft fonts are absent.
 fn language_switch_renders_the_ribbon_and_persists() {
     let mut h = harness(blank());
     // English by default whatever the host's locale: only the desktop app reads the system language.
@@ -454,6 +459,7 @@ fn language_switch_renders_the_ribbon_and_persists() {
 }
 
 #[test]
+/// The PivotTable Fields pane and its field menus switch to Spanish.
 fn pivot_fields_pane_follows_the_interface_language() {
     // #858: the PivotTable Fields pane and its field menus stayed in English after switching to Spanish.
     let mut h = harness(blank());
@@ -588,6 +594,7 @@ fn recommended_charts_dialog_inserts_the_chosen_chart() {
 }
 
 #[test]
+/// Selecting 100% Stacked Area in the All Charts list inserts that chart type.
 fn all_charts_inserts_a_hundred_percent_stacked_area() {
     let mut s = blank();
     s.execute("range.setValues", json!({"range": "A1", "values": [["Quarter", "North", "South"], ["Q1", 10, 30], ["Q2", 30, 10]]})).unwrap();
@@ -655,6 +662,7 @@ fn select_data_dialog_sets_the_category_axis_labels() {
 }
 
 #[test]
+/// Each listed dialog opens, passes accessibility and closes.
 fn dialogs_open_and_close() {
     let mut h = harness(blank());
     for name in [

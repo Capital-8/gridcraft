@@ -45,16 +45,19 @@ fn themed() -> egui::Context {
     ctx
 }
 
+/// Returns the characters in `symbols` that lack a glyph in the given font family.
 fn missing(ctx: &egui::Context, symbols: &str, family: FontFamily) -> String {
     let font = FontId::new(14.0, family);
     symbols.chars().filter(|&c| !ctx.fonts_mut(|f| f.has_glyph(&font, c))).collect()
 }
 
+/// Returns the proportional and cell font families checked by the symbol-glyph tests.
 fn families() -> [FontFamily; 2] {
     [FontFamily::Proportional, FontFamily::Name(theme::CELL.into())]
 }
 
 #[test]
+/// Every required bundled interface symbol resolves in both checked font families.
 fn bundled_required_ui_symbols_resolve_to_real_glyphs() {
     let ctx = themed();
     for family in families() {
@@ -69,6 +72,7 @@ fn bundled_required_ui_symbols_resolve_to_real_glyphs() {
 }
 
 #[test]
+/// The remaining bundled interface symbols resolve in both checked font families.
 fn bundled_symbols_cover_the_rest_of_the_interface() {
     let ctx = themed();
     for family in families() {
@@ -78,6 +82,7 @@ fn bundled_symbols_cover_the_rest_of_the_interface() {
 }
 
 #[test]
+/// U+10FFFD is the only tofu probe and does not resolve in either family.
 fn unknown_codepoint_is_the_tofu_probe_not_a_symbol() {
     // A private-use code point no font covers. This is the only place that relies on the
     // replacement box: real-glyph checks above use `has_glyph`, because comparing a glyph's
@@ -90,6 +95,7 @@ fn unknown_codepoint_is_the_tofu_probe_not_a_symbol() {
 }
 
 #[test]
+/// `✕`/`✓` map to code icons and `⌃` falls back to `^`; the semantic `×` and `^` resolve.
 fn chrome_symbols_without_a_bundled_glyph_have_code_drawn_or_semantic_fallbacks() {
     // No bundled face has ✕, ✓ or ⌃. The buttons that used to paint ✕/✓ as text now draw the
     // original code icons Icon::Close/Icon::Check, and the one Control-key tooltip falls back to
@@ -105,6 +111,7 @@ fn chrome_symbols_without_a_bundled_glyph_have_code_drawn_or_semantic_fallbacks(
 }
 
 #[test]
+/// Without craft fonts it prints the optional `✓`/`⌃` gaps as a diagnostic; the strict bundled checks still run separately.
 fn no_font_mode_documents_the_optional_symbol_gaps() {
     if theme::craft_fonts_loaded() {
         return;
@@ -119,6 +126,7 @@ fn no_font_mode_documents_the_optional_symbol_gaps() {
 }
 
 #[test]
+/// With craft fonts, the seven-symbol union, Korean samples and exact permitted faces are checked; a required build without them fails instead of skipping.
 fn extended_craft_fonts_cover_the_required_symbol_union_and_korean() {
     if !theme::craft_fonts_loaded() {
         // Optional-input diagnostic mode only. A required acceptance build must fail, not skip.
@@ -174,6 +182,7 @@ fn assert_exact_permitted_faces() {
 }
 
 #[test]
+/// Advertised script samples resolve in the craft faces; Chinese samples join only when the LXGW face was embedded, and a required build without faces fails.
 fn craft_fonts_cover_the_advertised_scripts() {
     if !theme::craft_fonts_loaded() {
         assert!(!theme::craft_fonts_required(), "CRAFT_FONTS_REQUIRED=1 but the build embedded no craft-fonts faces");

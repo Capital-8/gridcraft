@@ -7,6 +7,7 @@ use gridcraft_ui_egui::{SheetApp, theme::Tokens};
 use serde_json::json;
 
 #[test]
+/// Dark mode paints the tab-bar fill over the strip beside the final column heading.
 fn dark_theme_fills_the_strip_right_of_the_last_column_heading() {
     let mut session = Session::new();
     session.new_workbook();

@@ -21,6 +21,7 @@ fn session_with_table() -> Session {
     session
 }
 
+/// Sets a saved ribbon tab on a fresh app and builds the stepped harness, for unavailable-tab cases.
 fn app_restored_on(tab: &str, session: Session) -> Harness {
     let mut app = crate::common::app(session);
     app.ui.ribbon_tab = tab.into();

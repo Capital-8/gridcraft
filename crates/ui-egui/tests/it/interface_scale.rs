@@ -5,6 +5,7 @@ use gridcraft_ui_egui::{SheetApp, UiState};
 use serde_json::json;
 
 #[test]
+/// Interface size applies and persists, clamps to 75-200, accepts `auto`, and rejects missing or non-numeric values.
 fn interface_size_applies_persists_and_clamps() {
     let mut session = Session::new();
     session.new_workbook();

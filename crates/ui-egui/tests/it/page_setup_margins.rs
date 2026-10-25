@@ -8,6 +8,7 @@ fn margins(app: &SheetApp) -> [f32; 6] {
     app.session.active().and_then(|d| d.wb.active()).map(|s| s.print.margins).unwrap_or_default()
 }
 
+/// Applies six custom page margins and asserts the engine stored them.
 fn app_with_custom_margins() -> SheetApp {
     let mut session = Session::new();
     session.new_workbook();

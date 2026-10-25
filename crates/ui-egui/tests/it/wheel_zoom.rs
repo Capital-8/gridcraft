@@ -7,10 +7,12 @@ use serde_json::json;
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;
 
+/// Builds a mouse-wheel event from its unit, source, phase, delta and modifiers.
 fn wheel_event(unit: MouseWheelUnit, source: MouseWheelSource, phase: TouchPhase, delta: egui::Vec2, modifiers: Modifiers) -> Event {
     Event::MouseWheel { unit, delta, phase, modifiers, source }
 }
 
+/// Builds a blank stepped harness and leaves the pointer centered over the grid.
 fn harness() -> Harness {
     let mut session = Session::new();
     session.new_workbook();
@@ -222,6 +224,7 @@ fn gesture(h: &mut Harness, source: MouseWheelSource, delta: f32, frames: usize)
 }
 
 #[test]
+/// A 40-point notch follows the same monotonic ladder and reaches 120%.
 fn point_units_use_the_same_zoom_ladder_as_lines() {
     let mut h = animated();
     // egui converts a line to 40 points (native); the same physical notch must reach 120%.
@@ -231,6 +234,7 @@ fn point_units_use_the_same_zoom_ladder_as_lines() {
 }
 
 #[test]
+/// Trackpad and momentum sources follow the same monotonic ladder to 120%.
 fn trackpad_and_momentum_sources_keep_the_notch_ladder() {
     for source in [MouseWheelSource::Trackpad, MouseWheelSource::Momentum] {
         let mut h = animated();
@@ -241,6 +245,7 @@ fn trackpad_and_momentum_sources_keep_the_notch_ladder() {
 }
 
 #[test]
+/// A missing touch End is released by the idle timeout, so the next gesture still reaches 140%.
 fn a_trackpad_gesture_without_an_end_still_steps_on_after_the_idle_timeout() {
     let mut h = animated();
     let first = gesture(&mut h, MouseWheelSource::Trackpad, 40.0, 40);
@@ -252,6 +257,7 @@ fn a_trackpad_gesture_without_an_end_still_steps_on_after_the_idle_timeout() {
 }
 
 #[test]
+/// A page-unit scroll moves roughly a viewport, while 40 points scroll less than a page.
 fn page_and_point_units_scroll_the_grid_by_their_converted_distance() {
     let mut h = harness();
     let grid = h.state().grid.cells_rect.unwrap();

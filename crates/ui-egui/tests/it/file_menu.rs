@@ -99,6 +99,7 @@ fn save_actions_include_the_cell_draft_and_close_keeps_the_unsaved_prompt() {
 }
 
 #[test]
+/// Options opens, named Backstage pages are reachable and accessible, an invalid page errors, and both close and Back leave Backstage.
 fn file_options_opens_the_options_page_and_pages_are_reachable_by_command() {
     let mut h = harness(Services::default());
     let r = h.state_mut().run("file.options", serde_json::json!({})).unwrap();

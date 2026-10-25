@@ -133,6 +133,7 @@ fn right_click(h: &mut Harness, pos: egui::Pos2, wobble: egui::Vec2) {
 }
 
 #[test]
+/// A right-click selects the chart and opens its menu rather than the cell menu without moving the chart; Delete removes it, and an outside right-click still opens the cell menu.
 fn right_clicking_a_chart_opens_its_menu_not_the_cells() {
     // #2067: a right-click on a chart opened the menu of the cell under it, or nothing at all.
     for wobble in [vec2(0.0, 0.0), vec2(20.0, 10.0)] {

@@ -670,6 +670,7 @@ mod tests {
     }
 
     #[test]
+    /// Shift+Tab removes four leading spaces, while a plain Tab still inserts four spaces at the caret.
     fn shift_tab_in_the_editor_dedents_rather_than_indents() {
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(400.0, 300.0)).build_ui_state(
             |ui, text: &mut String| {
@@ -699,6 +700,7 @@ mod tests {
         ctx.set_fonts(theme::pinned_font_definitions());
     }
 
+    /// Builds a 400x300 code-editor harness with pinned mono fonts, focus, two passes and an accessibility check.
     fn editor_harness(text: &str) -> egui_kittest::Harness<'static, String> {
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(400.0, 300.0)).build_ui_state(
             |ui, text: &mut String| {
@@ -867,6 +869,7 @@ mod tests {
     }
 
     #[test]
+    /// Events held by the previous pass are applied once in the next pass; older held events are dropped and cleared.
     fn held_back_events_land_in_the_next_pass_only() {
         let mut h = editor_harness("");
         let id = egui::Id::unique("code");
@@ -884,6 +887,7 @@ mod tests {
     }
 
     #[test]
+    /// Held keyboard input does not land in the next focused text field once the code editor has lost focus.
     fn held_back_events_go_nowhere_once_the_editor_lost_the_focus() {
         // Typed into the editor, they must not land in whatever has the focus next.
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(400.0, 300.0)).build_ui_state(
@@ -909,6 +913,7 @@ mod tests {
     }
 
     #[test]
+    /// A discard-triggered repeat pass receives held keys with the selection made by the first pass.
     fn a_repeat_pass_of_the_frame_counts_as_the_next_pass() {
         // When a widget asks egui to discard and repeat the pass, the repeat pass gets the
         // held-back keys, with the selection the field made in the first pass.

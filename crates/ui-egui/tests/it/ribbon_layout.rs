@@ -102,6 +102,7 @@ struct Clicks {
 }
 
 #[test]
+/// The main button clicks once and the arrow twice separately; the tooltip keeps the platform shortcut, and the icon sits above the full-width label.
 fn big_split_button_separates_the_default_action_from_the_menu() {
     let mut h = crate::common::builder().with_size(vec2(300.0, 200.0)).build_ui_state(
         |ui, c: &mut Clicks| {

@@ -1,5 +1,6 @@
 //! French translations for the interface strings in i18n.rs.
 
+/// Returns the French translation for `text`, or `None` so callers fall back to English.
 pub(super) fn translate(text: &str) -> Option<&'static str> {
     Some(match text {
         "Different First Page" => "Première page différente",

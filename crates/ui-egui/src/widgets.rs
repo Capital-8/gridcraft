@@ -307,6 +307,7 @@ pub fn remember_color(recent: &mut Vec<String>, hex: &str) {
     recent.truncate(RECENT_COLORS);
 }
 
+/// Returns the stable id for the recent-colors cache.
 fn recent_colors_id() -> egui::Id {
     egui::Id::unique("gridcraft.recent_colors")
 }
@@ -338,6 +339,15 @@ pub fn color_palette_fixed(ui: &mut Ui, theme_colors: &[u32; 12], none_label: &s
     palette(ui, theme_colors, none_label, false)
 }
 
+/// Shared body of [`color_palette`] and [`color_palette_fixed`]: a 7×10 palette (six tinted theme rows
+/// above ten standard colours), then Recent Colors; the separator and More Colors… button appear only
+/// when `more_colors` is true; an existing picker state renders while open. Arrow keys move a highlight
+/// through all 70 swatches (rows clamp, columns
+/// wrap), Enter picks it, and those key events are stripped so the grid behind does not react; while More
+/// Colors… is open its HSVA/hex widgets take the keys instead. The None label returns `Some("none")`;
+/// otherwise the result is the picked hex or `None`. Highlight, picker state and recent colours live in
+/// egui temp storage, and More Colors… OK falls back to the picker colour for an invalid typed hex and
+/// records the result as the newest recent colour (capped at `RECENT_COLORS`).
 fn palette(ui: &mut Ui, theme_colors: &[u32; 12], none_label: &str, more_colors: bool) -> Option<String> {
     let t = Tokens::get(ui.ctx());
     let mut picked = None;
@@ -533,6 +543,7 @@ fn palette(ui: &mut Ui, theme_colors: &[u32; 12], none_label: &str, more_colors:
     picked
 }
 
+/// Draws the modal warning/error message; OK, Enter or Esc clears it and restores editor focus when an edit exists.
 pub fn message_box(app: &mut SheetApp, ctx: &egui::Context) {
     let Some((title, msg)) = app.message.clone() else { return };
     let title = app.ui.language.tr(&title).to_owned();
@@ -567,6 +578,7 @@ pub fn message_box(app: &mut SheetApp, ctx: &egui::Context) {
     }
 }
 
+/// Shows a translated toast for 2.5 seconds and clears it after the deadline.
 pub fn toast(app: &mut SheetApp, ctx: &egui::Context) {
     let Some((msg, at)) = app.toast.clone() else { return };
     if crate::now_ms() - at > 2500.0 {
@@ -671,6 +683,7 @@ mod glyph_button_tests {
     use super::*;
 
     #[test]
+    /// The `✓` gallery button paints vector paths instead of the missing character.
     fn a_symbol_with_no_bundled_glyph_paints_a_code_icon() {
         // ✓ has no bundled egui face. The gallery button must paint Icon::Check (vector paths),
         // not the missing character, without weakening the font or accessibility policy.
@@ -691,6 +704,7 @@ mod tooltip_shortcut_tests {
     use super::tooltip_shortcut;
 
     #[test]
+    /// Windows/Linux tooltips use Ctrl/Alt shortcuts and macOS uses Command glyphs; a command without a shortcut reports none.
     fn tooltips_show_each_platforms_own_shortcut() {
         // #1191: Windows and Linux show Excel for Windows' shortcuts, never the Mac ⌘ ones.
         assert_eq!(tooltip_shortcut("Bold", false), Some("Ctrl+B"));

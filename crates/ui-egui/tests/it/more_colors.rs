@@ -63,6 +63,7 @@ fn more_colors_applies_the_typed_colour_and_remembers_it() {
 }
 
 #[test]
+/// A short hex value applies no fill, and Cancel applies nothing and remembers no color.
 fn a_colour_that_is_not_hex_does_not_apply_and_cancel_applies_nothing() {
     let mut h = harness();
     open_fill_palette(&mut h);

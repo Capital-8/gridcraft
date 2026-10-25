@@ -47,6 +47,7 @@ impl Default for BarLayout {
 }
 
 impl BarLayout {
+    /// Returns the stable widget id used for the formula-bar layout state.
     pub fn id() -> egui::Id {
         egui::Id::unique("formula_bar.layout")
     }
@@ -64,6 +65,7 @@ pub struct EditorInfo {
     pub caret: Option<Rect>,
 }
 
+/// Draws the formula bar: line-count-driven height, Name Box, cancel/enter/Fx buttons, the editable field, muted read-only spill text and the expansion chevron.
 pub fn show(app: &mut SheetApp, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
     let font = theme::ui_font(13.0);
@@ -185,6 +187,7 @@ fn active_input(app: &SheetApp) -> String {
     String::new()
 }
 
+/// Draws the Name Box and its name dropdown; Enter jumps to a reference or known name (or defines a new name) and is consumed so the grid does not move down.
 fn name_box(app: &mut SheetApp, ui: &mut egui::Ui, t: &Tokens) -> Rect {
     let id = egui::Id::unique("gridcraft.name_box");
     let shown = app.name_box_text();
@@ -778,6 +781,7 @@ mod spill_tests {
         check(&mut app, "A2", "=FILTER(D1:D3,D1:D3>0)", true);
     }
     #[test]
+    /// A disabled spill formula paints disabled and does not edit; clicking an active formula starts formula-bar editing in both light and dark themes, with accessibility checks.
     fn formula_bar_click_and_theme_presentation() {
         use egui_kittest::kittest::Queryable as _;
         for dark in [false, true] {

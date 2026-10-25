@@ -78,6 +78,7 @@ fn localized_argument_hints_ignore_decimal_commas_arrays_and_nested_calls() {
 }
 
 #[test]
+/// Spanish autocomplete offers `SUMA` instead of `SUM`; accepting it inserts `=SUMA(`, and English switches back.
 fn localized_autocomplete_is_rendered_and_inserts_the_selected_name() {
     let mut app = app();
     app.run("app.language.set", json!({"language":"es"})).unwrap();
@@ -140,6 +141,7 @@ fn locale_preserves_text_cells_and_existing_entry_conveniences() {
 }
 
 #[test]
+/// Insert Function and AutoSum use `=SUMA(`, while user-supplied formula text is not translated twice.
 fn canonical_engine_templates_enter_the_selected_formula_language() {
     let mut app = app();
     app.run("app.language.set", json!({"language":"es"})).unwrap();

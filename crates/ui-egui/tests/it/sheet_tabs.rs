@@ -10,6 +10,7 @@ fn harness(width: f32, active: usize) -> Harness {
     harness_with(width, 30, active)
 }
 
+/// Builds a tab strip with the caller's width, sheet count and active sheet, using pinned fonts and an explicit grid rect.
 fn harness_with(width: f32, sheets: usize, active: usize) -> Harness {
     let mut s = Session::new();
     s.new_workbook();
@@ -85,6 +86,7 @@ fn navigation_arrows_reveal_the_selected_tab() {
 }
 
 #[test]
+/// Horizontal wheel/trackpad browsing leaves the workbook unchanged, does not snap back on idle frames, and activating a sheet still reveals its tab.
 fn manual_wheel_and_trackpad_browsing_does_not_change_selection_or_snap_back() {
     for delta in [vec2(0.0, -350.0), vec2(-350.0, 0.0)] {
         let mut h = harness(700.0, 0);

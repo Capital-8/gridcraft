@@ -2,6 +2,7 @@
 //! Command ids, cell references and formula identifiers are not translated.
 //! Source labels are kept verbatim and unmatched labels fall back to English.
 
+/// Returns the Greek translation for `text`, or `None` so callers fall back to English.
 pub(super) fn translate(text: &str) -> Option<&'static str> {
     Some(match text {
         "Paste" => "Επικόλληση",

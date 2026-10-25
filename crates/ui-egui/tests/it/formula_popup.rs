@@ -21,11 +21,13 @@ fn frames(ctx: &Context, app: &mut SheetApp) {
     }
 }
 
+/// Reports whether the named autocomplete/helper tooltip layer is visible.
 fn visible(ctx: &Context, editor: &str) -> bool {
     ctx.memory(|m| m.areas().is_visible(&LayerId::new(Order::Tooltip, Id::unique(editor).with("ac"))))
 }
 
 #[test]
+/// Autocomplete and argument help hide when the edited cell scrolls out, the edit is preserved, and both return when it scrolls back.
 fn cell_formula_helpers_hide_when_scrolled_out_and_return_with_the_editor() {
     for text in ["=SU", "=SUM("] {
         let ctx = Context::default();
@@ -88,6 +90,7 @@ fn paints_visible_text(output: &egui::FullOutput, text: &str, cells: Rect) -> bo
 }
 
 #[test]
+/// Formula-bar help stays visible while the sheet scrolls.
 fn formula_bar_hint_remains_visible_when_the_worksheet_scrolls() {
     let ctx = Context::default();
     let mut session = Session::new();
@@ -103,6 +106,7 @@ fn formula_bar_hint_remains_visible_when_the_worksheet_scrolls() {
 }
 
 #[test]
+/// Cell argument help is clipped to the worksheet instead of painting over the headers.
 fn cell_argument_hint_is_clipped_to_the_worksheet() {
     let ctx = Context::default();
     let mut session = Session::new();
@@ -120,6 +124,7 @@ fn cell_argument_hint_is_clipped_to_the_worksheet() {
 }
 
 #[test]
+/// An editor for a scrolled-out cell still handles Esc.
 fn scrolled_out_cell_editor_still_handles_escape() {
     let ctx = Context::default();
     let mut session = Session::new();
@@ -149,6 +154,7 @@ fn scrolled_out_cell_editor_still_handles_escape() {
 }
 
 #[test]
+/// The editor and its helper clip below the frozen top row, stay hidden while the cell is under it, and return on scroll-back.
 fn cell_editor_and_helper_stay_below_the_frozen_top_row() {
     let ctx = Context::default();
     let mut session = Session::new();
@@ -240,6 +246,7 @@ fn frozen_column_editor_paints_in_both_panes_on_a_right_to_left_sheet() {
 }
 
 #[test]
+/// The DATEDIF helper paints its signature and a wrapped unit description no wider than 400 points.
 fn argument_hint_shows_the_function_description() {
     // #363: inside DATEDIF( the hint lists the units the third argument takes.
     let ctx = Context::default();

@@ -14,6 +14,7 @@ type Harness = egui_kittest::Harness<'static, SheetApp>;
 /// longer folds it into the label, so screen readers (and kittest) see the purpose without it.
 const CIRCULAR: &str = "Circular References";
 
+/// Builds the Formulas-tab harness, optionally adding cross-sheet and same-sheet circular references and selecting H20.
 fn harness(loops: bool) -> Harness {
     let mut s = Session::new();
     s.new_workbook();
@@ -131,6 +132,7 @@ fn circular_references_scrolls_to_the_cell_picked() {
 }
 
 #[test]
+/// Wheel scrolling brings A100 into view, and clicking it selects A100.
 fn circular_references_scrolls_a_list_taller_than_the_window() {
     let mut h = harness(false);
     for row in 1..=100 {

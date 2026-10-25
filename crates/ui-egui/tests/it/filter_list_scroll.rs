@@ -42,6 +42,7 @@ fn filter_menu_on_a_long_list() -> Harness {
 }
 
 #[test]
+/// A wheel event over the menu's blank right area scrolls the value list.
 fn filter_list_scrolls_with_the_pointer_right_of_the_values() {
     let mut h = filter_menu_on_a_long_list();
     let first = h.get_by_label("ITEM-001").rect();

@@ -6,6 +6,7 @@ use serde_json::json;
 use std::{cell::RefCell, rc::Rc};
 
 #[test]
+/// Opening settings and exporting do not spool; a configured native print submits its settings, and a spool error is reported.
 fn native_print_uses_selected_settings_and_reports_spool_errors() {
     let mut session = Session::new();
     session.new_workbook();
@@ -43,6 +44,7 @@ fn native_print_uses_selected_settings_and_reports_spool_errors() {
 }
 
 #[test]
+/// Print settings stay visible and accessible in an 800x700 window; toggling Grayscale updates the settings and readiness.
 fn print_settings_are_visible_in_a_narrow_window() {
     use egui_kittest::kittest::{NodeT, Queryable};
     let mut session = Session::new();
@@ -77,6 +79,7 @@ fn print_settings_are_visible_in_a_narrow_window() {
 }
 
 #[test]
+/// Every malformed print-settings request errors and leaves the prior settings unchanged.
 fn invalid_print_settings_are_rejected_without_partial_changes() {
     let mut session = Session::new();
     session.new_workbook();
@@ -102,6 +105,7 @@ fn invalid_print_settings_are_rejected_without_partial_changes() {
 }
 
 #[test]
+/// Two fast jobs each surface the same receipt exactly once.
 fn repeated_fast_jobs_each_surface_an_identical_receipt() {
     let mut session = Session::new();
     session.new_workbook();

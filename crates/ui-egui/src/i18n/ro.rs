@@ -5,6 +5,7 @@
 //! usual in Romanian software ("Salvare", "Inserare…") and messages address the user formally.
 //! An AI-assisted draft (Claude) for a Romanian-speaking contributor, pending native-speaker review.
 
+/// Returns the Romanian translation for `text`, or `None` so callers fall back to English.
 pub(super) fn translate(text: &str) -> Option<&'static str> {
     Some(match text {
         "Paste" => "Lipire",

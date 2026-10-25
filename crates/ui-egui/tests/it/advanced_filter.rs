@@ -18,6 +18,7 @@ fn control(h: &mut egui_kittest::Harness<'static, SheetApp>, method: &str, param
 }
 
 #[test]
+/// Checks that the copy destination field appears and that a unique extract writes `B` to C3, closing the dialog without a message.
 fn dialog_offers_copy_action_and_runs_unique_extract() {
     let mut h = harness();
     h.state_mut().run("range.setValues", json!({"range": "A1", "values": [["Name"], ["A"], ["A"], ["B"]]})).unwrap();

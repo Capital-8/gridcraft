@@ -438,6 +438,7 @@ pub fn go_to(app: &mut SheetApp, footer: bool) {
     begin(app, sheet, &sh, page, HfZone { footer, section });
 }
 
+/// Edits a header/footer section across left/center/right, cancels on Esc, switches sections and preserves focus/caret while the page scrolls.
 fn editor(app: &mut SheetApp, ui: &mut egui::Ui, geo: &Geo, pg: &PageGrid) {
     let Some(mut e) = app.grid.hf_edit.take() else { return };
     if ui.input_mut(|i| i.consume_key(egui::Modifiers::NONE, Key::Escape)) {

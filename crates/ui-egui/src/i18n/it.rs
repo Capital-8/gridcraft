@@ -2,6 +2,7 @@
 //! wording (sentence case, «Blocca riquadri», «Unisci e allinea al centro»); anything absent falls
 //! back to English.
 
+/// Returns the Italian translation for `text`, or `None` so callers fall back to English.
 pub(super) fn translate(text: &str) -> Option<&'static str> {
     Some(match text {
         "Paste" => "Incolla",

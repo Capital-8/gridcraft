@@ -142,6 +142,7 @@ fn space_shortcuts_per_platform() {
 }
 
 #[test]
+/// Alt+Down opens the active header's filter menu in LTR and RTL without editing the workbook; typing goes to the search box and Esc dismisses it.
 fn alt_down_opens_autofilter_headers_without_changing_the_workbook() {
     for rtl in [false, true] {
         for cell in ["A1", "B1"] {

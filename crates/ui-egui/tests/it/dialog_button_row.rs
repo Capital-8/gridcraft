@@ -7,6 +7,7 @@ use gridcraft_ui_egui::SheetApp;
 use serde_json::json;
 
 #[test]
+/// OK sits between 0 and 40 points below the last dialog option.
 fn ok_and_cancel_sit_under_the_last_field() {
     let mut s = Session::new();
     s.new_workbook();

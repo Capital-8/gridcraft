@@ -17,6 +17,7 @@ pub fn active_pivot(app: &SheetApp) -> Option<String> {
     sh.pivots.iter().find(|p| p.last_range.is_some_and(|r| r.contains(a)) || p.anchor == a).map(|p| p.name.clone())
 }
 
+/// Draws the PivotTable Fields pane: add/remove fields, move them between areas, sort/group/value settings, refresh, calculated field and report layout.
 pub fn show(app: &mut SheetApp, ui: &mut Ui) {
     let Some(name) = active_pivot(app) else { return };
     let t = Tokens::get(ui.ctx());

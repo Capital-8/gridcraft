@@ -10,6 +10,7 @@ use serde_json::json;
 
 type Harness = egui_kittest::Harness<'static, SheetApp>;
 
+/// Builds a stepped 1200x800 harness around the caller's session and settles its frames.
 fn harness(session: Session) -> Harness {
     let mut h = crate::common::builder().with_size(vec2(1200.0, 800.0)).with_step_dt(1.0 / 60.0).build_ui_state(
         |ui, app: &mut SheetApp| {
@@ -149,6 +150,7 @@ fn height_eases_instead_of_jumping() {
     assert!((layout(&h).height - (base + 4.0 * rh)).abs() < 0.5);
 }
 
+/// Opens a multi-line edit in B3, checks the text is kept whole, and returns the painted editor height.
 fn in_cell_height(lines: usize) -> f32 {
     let mut s = blank();
     s.execute("selection.set", json!({"cell": "B3"})).unwrap();
@@ -171,6 +173,7 @@ fn in_cell_editor_grows_with_every_line() {
 }
 
 #[test]
+/// The code editor indents after Enter and preserves indentation across typed lines, with an accessibility check.
 fn code_editor_indents_and_keeps_indentation() {
     struct State {
         text: String,

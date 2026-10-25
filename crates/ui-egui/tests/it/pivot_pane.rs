@@ -5,6 +5,7 @@ use gridcraft_engine::Session;
 use gridcraft_ui_egui::theme;
 use serde_json::json;
 
+/// Builds a pivot report at D3 and returns the painted shapes after six frames in the caller's light or dark mode.
 fn render_pivot_field_buttons(dark: bool) -> Vec<Shape> {
     let mut session = Session::new();
     session.new_workbook();

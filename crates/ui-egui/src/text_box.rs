@@ -17,6 +17,7 @@ pub struct EditState {
     rect: Option<Rect>,
 }
 
+/// Returns the stable id for the text-box editor.
 pub(crate) fn editor_id() -> egui::Id {
     egui::Id::unique("gridcraft.text_box_editor")
 }
@@ -110,6 +111,7 @@ pub(crate) fn contains_pointer(app: &SheetApp, ctx: &egui::Context) -> bool {
     app.text_box_editor.as_ref().and_then(|ed| ed.rect).is_some_and(|r| ctx.input(|i| i.pointer.hover_pos().is_some_and(|p| r.contains(p))))
 }
 
+/// Draws the text-box editor with focus/caret state, save shortcuts, scrolling/clipping, and clears editing mode when the shape is gone.
 pub(crate) fn show(app: &mut SheetApp, ui: &mut egui::Ui, geo: &Geo, sh: &gridcraft_engine::model::Sheet) {
     let Some(mut ed) = app.text_box_editor.take() else { return };
     if app.view_key() != Some((ed.uid, ed.sheet)) {

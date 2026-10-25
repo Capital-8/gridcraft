@@ -3,6 +3,7 @@
 use gridcraft_engine::Session;
 
 #[test]
+/// AutoSave defaults off, toggles on and off, and survives `UiState` serialization.
 fn autosave_survives_a_restart() {
     let mut app = crate::common::app(Session::new());
     assert!(!app.ui.autosave, "off by default");

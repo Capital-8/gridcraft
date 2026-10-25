@@ -35,6 +35,7 @@ const TITLE_BAR_H: f32 = if MAC { MAC_TITLE_BAR } else { 38.0 };
 const TITLE_CONTROL_H: f32 = if MAC { 22.0 } else { 26.0 };
 const _: () = assert!(TITLE_CONTROL_H < TITLE_BAR_H, "title-bar controls keep a margin above and below");
 
+/// Draws the title bar: drag/maximize, AutoSave toggle, Home/Save/Undo/Redo/More, search, share, comments and theme controls, with a centered truncated title.
 pub fn title_bar(app: &mut SheetApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     let ch = TITLE_CONTROL_H;
@@ -210,6 +211,7 @@ fn paint_title(ui: &Ui, center: egui::Pos2, title: &str, dirty: bool, max_w: f32
     }
 }
 
+/// Draws the ribbon tabs and the active tab's horizontally scrollable card, resetting an unavailable contextual tab to Home.
 pub fn show(app: &mut SheetApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     let collapsed = app.ui.ribbon_collapsed;
@@ -345,6 +347,7 @@ pub struct RibbonOverflow {
 }
 
 impl RibbonOverflow {
+    /// Returns the stable id for the ribbon overflow state.
     fn id() -> egui::Id {
         egui::Id::unique("ribbon_overflow")
     }
@@ -736,6 +739,7 @@ fn menu_items(app: &mut SheetApp, ui: &mut Ui, items: &[(&str, &str, serde_json:
     }
 }
 
+/// Draws the Home tab: clipboard/paste menu, font, alignment, number, style, cell and editing commands with keytips.
 fn home(app: &mut SheetApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     let st = active_style(app);
@@ -1642,6 +1646,7 @@ fn cell_style_gallery(app: &mut SheetApp, ui: &mut Ui) {
     }
 }
 
+/// Draws the Insert tab: PivotTable, Table, Pictures, Shapes, Icons, charts, slicer, sparklines, checkbox, links, comments, text box, header/footer and symbols.
 fn insert(app: &mut SheetApp, ui: &mut Ui) {
     let __k = big_button(ui, Icon::PivotTable, "PivotTable", "PivotTable", false);
     control_keytip(app, ui, &__k, "insert.pivotTable");
@@ -2439,6 +2444,7 @@ fn review(app: &mut SheetApp, ui: &mut Ui) {
     }
 }
 
+/// Draws the View tab: view modes, ruler/gridlines/formula-bar/headings toggles, zoom, freeze panes, theme, animations, interface size and language.
 fn view(app: &mut SheetApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     let _ = t;
@@ -2615,6 +2621,7 @@ fn automate(app: &mut SheetApp, ui: &mut Ui) {
     }
 }
 
+/// Draws the Table Design tab: rename, resize, remove duplicates, convert to range, slicer, table options and the style strip.
 fn table_design(app: &mut SheetApp, ui: &mut Ui) {
     let Some((tname, header, totals, banded, banded_c, first, last, filter, style)) = app.session.active().and_then(|d| {
         let sh = d.wb.active()?;

@@ -50,6 +50,7 @@ pub fn show(app: &mut SheetApp, ui: &mut Ui) {
     });
 }
 
+/// Lists comments and replies, links each to its cell, and runs delete/resolve/reopen/reply commands.
 fn comments(app: &mut SheetApp, ui: &mut Ui) {
     let Some(d) = app.session.active() else { return };
     let Some(sh) = d.wb.active() else { return };
@@ -106,6 +107,7 @@ fn comments(app: &mut SheetApp, ui: &mut Ui) {
     }
 }
 
+/// Adds the active cell, lists watch values and formulas, and removes watched entries.
 fn watch(app: &mut SheetApp, ui: &mut Ui) {
     if ui.button("Add Watch (active cell)").clicked()
         && let Some(d) = app.session.active()
@@ -134,6 +136,7 @@ fn watch(app: &mut SheetApp, ui: &mut Ui) {
     });
 }
 
+/// Lists the sheet's objects and dispatches select, bring-forward, send-backward and delete.
 fn selection(app: &mut SheetApp, ui: &mut Ui) {
     let list = app.session.run("arrange.selectionPane", json!({})).unwrap_or(Json::Null);
     let items = list.as_array().cloned().unwrap_or_default();
@@ -161,6 +164,7 @@ fn selection(app: &mut SheetApp, ui: &mut Ui) {
     }
 }
 
+/// Draws the chart format pane: title, type, legend, elements/axis titles, series colors, palettes/layouts and size.
 fn format_chart(app: &mut SheetApp, ui: &mut Ui) {
     let Some(id) = app.selected_chart else {
         ui.label(egui::RichText::new("Select a chart to format it.").italics());

@@ -21,6 +21,7 @@ fn harness() -> Harness {
     h
 }
 
+/// Returns the remembered egui area rect for a named dialog.
 fn dialog_rect(h: &Harness, name: &str) -> egui::Rect {
     h.ctx.memory(|m| m.area_rect(egui::Id::unique("dialog").with(name))).unwrap()
 }

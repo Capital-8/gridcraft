@@ -329,6 +329,7 @@ pub struct SheetApp {
 }
 
 impl SheetApp {
+    /// Constructs a `SheetApp` with default UI, grid, printing, control and screenshot state and the caller's session and services.
     pub fn new(session: Session, services: Services) -> SheetApp {
         SheetApp {
             session,
@@ -1425,6 +1426,7 @@ impl SheetApp {
         ctx.request_repaint();
     }
 
+    /// Records capture geometry from the fresh raw frame, then offers exactly one pending synthetic batch and tracks whether it was applied.
     pub fn raw_input_hook(&mut self, ctx: &egui::Context, raw: &mut egui::RawInput) {
         // Capture geometry from this frame's real input before any synthetic event is added. This
         // runs on every native frame, including hidden/minimized logic-only ticks, so a resize,
@@ -1649,6 +1651,7 @@ pub fn monotonic_ms() -> f64 {
 }
 
 #[cfg(target_arch = "wasm32")]
+/// Web monotonic clock: the browser's `performance.now()`, or 0 when it is unavailable.
 pub fn monotonic_ms() -> f64 {
     web_sys::window().and_then(|window| window.performance()).map_or(0.0, |performance| performance.now())
 }
@@ -1661,10 +1664,12 @@ pub fn cell(r: u32, c: u32) -> CellRef {
 mod lifecycle_tests {
     use super::*;
 
+    /// Builds a key-A press or release event without modifiers.
     fn key_event(pressed: bool) -> egui::Event {
         egui::Event::Key { key: egui::Key::A, physical_key: None, pressed, repeat: false, modifiers: egui::Modifiers::NONE }
     }
 
+    /// Returns a test app with a new workbook and default services.
     fn app() -> SheetApp {
         let mut session = Session::new();
         session.new_workbook();
@@ -1680,6 +1685,7 @@ mod lifecycle_tests {
     }
 
     #[test]
+    /// Only one synthetic step is offered, is not duplicated by a hidden logic-only tick, and press/release remain distinct batches.
     fn a_hidden_logic_tick_keeps_one_unapplied_synthetic_step() {
         let ctx = egui::Context::default();
         let mut app = app();
@@ -1700,11 +1706,13 @@ mod lifecycle_tests {
         assert_eq!(app.synthetic.len(), 2, "press and release stay distinct batches");
     }
 
+    /// Returns raw input with a screen rect at the given size.
     fn raw_with_size(size: egui::Vec2) -> egui::RawInput {
         egui::RawInput { screen_rect: Some(egui::Rect::from_min_size(egui::Pos2::ZERO, size)), ..Default::default() }
     }
 
     #[test]
+    /// A font-gated early-returning pass does not lose the queued step; the hook offers it again and a later real pass applies it.
     fn a_font_gated_pass_offers_the_synthetic_step_again() {
         let ctx = egui::Context::default();
         ctx.set_fonts(theme::font_definitions());
@@ -1735,6 +1743,7 @@ mod lifecycle_tests {
     }
 
     #[test]
+    /// A language-driven font rebuild waits while a synthetic step is pending and proceeds once it is clear.
     fn a_pending_step_delays_a_font_change() {
         let ctx = egui::Context::default();
         let mut app = app();
@@ -1752,7 +1761,9 @@ mod lifecycle_tests {
     }
 
     #[test]
+    /// Logic ticks see fresh viewport and DPI information; resizing back to the original size still advances the capture epoch.
     fn a_hidden_logic_tick_sees_fresh_viewport_info_and_keeps_the_epoch_monotonic() {
+        /// Runs one logic tick with the requested width and native scale.
         fn tick(ctx: &egui::Context, app: &mut SheetApp, width: f32, native_ppp: f32) {
             let mut raw =
                 egui::RawInput { screen_rect: Some(egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(width, 400.0))), ..Default::default() };
@@ -1778,7 +1789,9 @@ mod lifecycle_tests {
     }
 
     #[test]
+    /// A resize and a resize back both advance the capture epoch.
     fn the_capture_epoch_changes_even_when_the_geometry_returns() {
+        /// Runs one UI pass at the requested width.
         fn tick(ctx: &egui::Context, app: &mut SheetApp, width: f32) {
             let raw =
                 egui::RawInput { screen_rect: Some(egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(width, 400.0))), ..Default::default() };
@@ -1795,6 +1808,7 @@ mod lifecycle_tests {
         assert!(app.capture_epoch > changed, "resizing back is still a new epoch: old pixels must not be saved");
     }
 
+    /// Extracts title viewport commands from a logic output.
     fn titles(out: &egui::LogicOutput) -> Vec<String> {
         out.viewport_commands
             .values()
@@ -1807,6 +1821,7 @@ mod lifecycle_tests {
     }
 
     #[test]
+    /// A hidden logic tick saves a dirty file-backed workbook once and clears its dirty state.
     fn a_logic_only_tick_autosaves_a_dirty_workbook_once() {
         let ctx = egui::Context::default();
         let mut app = app();
@@ -1830,6 +1845,7 @@ mod lifecycle_tests {
     }
 
     #[test]
+    /// The title is sent on the first tick and after a rename, but not on every unchanged frame.
     fn a_logic_only_tick_updates_the_title_once_per_change() {
         let ctx = egui::Context::default();
         let mut app = app();
@@ -1847,6 +1863,7 @@ mod lifecycle_tests {
     }
 
     #[test]
+    /// A hidden tick surfaces a failed print job in the app message.
     fn a_logic_only_tick_polls_printing_feedback() {
         let ctx = egui::Context::default();
         let mut app = app();
@@ -1864,6 +1881,7 @@ mod lifecycle_tests {
     }
 
     #[test]
+    /// Pending synthetic input makes logic request a real hidden paint.
     fn a_pending_synthetic_step_requests_a_hidden_paint() {
         let ctx = egui::Context::default();
         let mut app = app();

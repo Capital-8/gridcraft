@@ -97,6 +97,7 @@ fn assert_cell_unchanged(h: &Harness) {
 }
 
 #[test]
+/// Dragging inside the editor selects text and does not move the box; copy/cut/paste and Enter work, and an outside click commits the multiline text.
 fn double_click_edits_multiline_text_and_commits_on_outside_click() {
     let (mut h, id) = fixture();
     edit_box(&mut h, id);

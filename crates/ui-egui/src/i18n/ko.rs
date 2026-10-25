@@ -1,5 +1,6 @@
 //! Korean translations for the interface strings in i18n.rs.
 
+/// Returns the Korean translation for `text`, or `None` so callers fall back to English.
 pub(super) fn translate(text: &str) -> Option<&'static str> {
     Some(match text {
         "Paste" => "붙여넣기",

@@ -1251,6 +1251,7 @@ pub(crate) fn build_params(d: &Dialog) -> Json {
     v
 }
 
+/// Takes and draws the active dialog, dispatches its body by name, consumes picture-inbox results, runs OK/confirm commands, handles Esc/close and restores the back-dialog stack.
 pub fn show(app: &mut SheetApp, ctx: &egui::Context) {
     let Some(mut d) = app.dialog.take() else { return };
     if d.name == "pasteSpecial" {
@@ -1930,6 +1931,7 @@ fn macros(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog) {
     });
 }
 
+/// Draws the six-tab Format Cells editor (number, alignment, font, border, fill, protection); the Number tab shows a sample preview, and the style draft updates.
 fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool) {
     // `d.tab` stays the English name (it is what `open_dialog` and tests pass); only the drawn
     // labels are translated. The Fill tab is keyed by context: the Alignment tab's "Fill" is a
@@ -2224,6 +2226,7 @@ fn function_category_label(id: &str) -> &str {
     }
 }
 
+/// Draws the Find/Replace form with case, whole-cell and workbook options, requests field focus once, and runs find/replace with the current parameters.
 fn find(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog) {
     ui.horizontal(|ui| {
         for tab in ["Find", "Replace"] {
@@ -2369,6 +2372,7 @@ fn go_to_entries(app: &SheetApp) -> Vec<String> {
         .unwrap_or_default()
 }
 
+/// Draws a virtualized name/reference list and editable reference field, links to Go To Special, and confirms with `edit.goTo`.
 fn go_to(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool) {
     let lang = app.ui.language;
     let entries: Vec<String> =
@@ -2408,6 +2412,7 @@ fn go_to(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bo
     }
 }
 
+/// Draws the sort-level editor: header toggle, column/by/order controls, add/remove level, and `data.sort` on confirmation.
 fn sort(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool) {
     let lang = app.ui.language;
     let mut header = d.values.get("header").and_then(Json::as_bool).unwrap_or(true);
@@ -2754,6 +2759,7 @@ fn recommended_charts(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, con
     }
 }
 
+/// Draws chart range, series keep/remove and category-range controls and runs `chart.selectData` when something changed.
 fn select_data(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open: &mut bool) {
     let text = |d: &Dialog, k: &str| d.values.get(k).and_then(Json::as_str).unwrap_or("").to_string();
     let edit = |ui: &mut egui::Ui, d: &mut Dialog, key: &str, label: &str| {

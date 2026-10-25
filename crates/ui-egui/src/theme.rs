@@ -693,6 +693,7 @@ pub fn font_definitions_with(language: crate::i18n::Language, used: &[String]) -
     font_definitions_impl(language, used, true)
 }
 
+/// Builds the role font chains, script fallbacks, installed workbook fonts and optional craft-font faces, drops unparseable data and records which families were bound.
 fn font_definitions_impl(language: crate::i18n::Language, used: &[String], system: bool) -> FontDefinitions {
     let mut fonts = FontDefinitions::default();
     let base_prop: Vec<String> = fonts.families.get(&FontFamily::Proportional).cloned().unwrap_or_default();
@@ -1098,6 +1099,7 @@ pub fn symbol_face_installed() -> bool {
     }
 }
 
+/// Installs light and dark token visuals in both theme slots, keeps the 2-3 px widget and 8-10 px window/menu corner radii from 0.36, and sets spacing, text styles and the active theme.
 pub fn apply(ctx: &egui::Context, dark: bool) {
     // Install both palettes before System can switch between the style slots.
     for theme in [egui::Theme::Light, egui::Theme::Dark] {
@@ -1298,6 +1300,7 @@ mod tests {
     use crate::i18n::Language;
 
     #[test]
+    /// Loaded script-fallback faces end each role chain just before the craft fonts, in the language's order.
     fn fallback_faces_are_appended_to_every_family() {
         // Structural: whatever loaded, the non-Latin fallback keys must sit at the end of each chain
         // (after the Latin/default fonts) so Latin still wins for Latin text, in the language's order.
@@ -1320,6 +1323,7 @@ mod tests {
     }
 
     #[test]
+    /// Every font family ends with exactly the permitted craft faces in manifest order.
     fn craft_fonts_are_the_last_fallback_in_every_family() {
         // Ordering: app/bundled faces, Hack/emoji, system script fallbacks, permitted craft faces.
         // A craft face must never displace a system face that already covers a glyph.
@@ -1335,6 +1339,7 @@ mod tests {
     }
 
     #[test]
+    /// Skips on wasm or when required mode is off; a required native build must embed LXGW with `Hani`/`Hans`.
     fn a_required_native_build_embeds_the_chinese_face() {
         if cfg!(target_arch = "wasm32") || !craft_fonts_required() {
             return;
@@ -1348,6 +1353,7 @@ mod tests {
     }
 
     #[test]
+    /// No embedded craft face belongs to the barred Noto CJK, Adobe or Source families.
     fn barred_faces_never_enter_the_font_set() {
         for (family, _, _) in craft_font_scripts() {
             assert!(!family.contains("CJK"), "the barred Noto CJK collection must never be embedded: {family}");
@@ -1356,6 +1362,7 @@ mod tests {
     }
 
     #[test]
+    /// Skips when craft fonts are absent unless required mode is set; otherwise the required faces and their exact script tags are embedded.
     fn the_required_craft_faces_keep_their_exact_scripts() {
         if !craft_fonts_loaded() {
             assert!(!craft_fonts_required(), "CRAFT_FONTS_REQUIRED=1 but no craft-fonts faces were embedded");
@@ -1377,6 +1384,7 @@ mod tests {
     }
 
     #[test]
+    /// Interface text maps unbundled `⌃`, `✓` and `✕` to readable chrome fallbacks; document text is not rewritten.
     fn available_text_maps_unbundled_chrome_symbols() {
         // No bundled face has ⌃ ✓ ✕; chrome text must show ^ ✔ × instead of tofu. Document text is
         // never rewritten: this helper is only used for interface tooltips.
@@ -1452,6 +1460,7 @@ mod tests {
     }
 
     #[test]
+    /// A font file shared by several fallback scripts is loaded once, with one shared font blob rather than a copy per script.
     fn fallback_faces_load_each_file_once() {
         // The region-merged Noto Sans CJK .ttc serves Japanese, Chinese and Hangul; it must be loaded
         // once, not once per script (tens of MB each).
@@ -1468,6 +1477,7 @@ mod tests {
     }
 
     #[test]
+    /// Checks that the proportional and cell families have glyphs for every present script sample; samples with no system or craft face are printed as skipped.
     fn fallback_covers_its_script() {
         // Real glyph check, per script: the proportional family (what cells and the UI use) must
         // have a glyph for every non-space character in the sample. A script runs when a system
@@ -1528,6 +1538,7 @@ mod tests {
     }
 
     #[test]
+    /// Empty, garbage, truncated and bad-index fonts are refused; a bad face is dropped from the definitions and `set_fonts` does not panic.
     fn unparseable_font_files_are_rejected_not_fatal() {
         // #226: epaint panics in `set_fonts` on a face it can't parse ("An offset was out of
         // bounds"). Garbage, a truncated real font and a bad collection index must all be refused.
@@ -1558,6 +1569,7 @@ mod tests {
 
     #[cfg(not(target_arch = "wasm32"))]
     #[test]
+    /// A broken existing font candidate is skipped in favor of a later readable candidate.
     fn try_load_skips_a_broken_candidate() {
         // A candidate that exists but is not a readable font must not win over a good one behind it.
         let dir = std::env::temp_dir().join(format!("gridcraft-font-test-{}", std::process::id()));
@@ -1576,6 +1588,7 @@ mod tests {
 
     #[cfg(not(target_arch = "wasm32"))]
     #[test]
+    /// Repeated loads reuse one shared font blob, while a face the kept file does not contain is still refused.
     fn interface_fonts_are_read_once_and_shared_with_egui() {
         // egui copies owned font bytes into its text engine and keeps the original too; borrowed
         // bytes it shares. A rebuild of the font set reuses the file read the first time.

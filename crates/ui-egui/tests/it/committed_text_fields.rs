@@ -37,6 +37,7 @@ fn retype(h: &mut Harness, field: egui::Rect, text: &str) {
 }
 
 #[test]
+/// Editing the Format Chart title field sets the chart title.
 fn typing_a_chart_title_in_format_chart_area_sets_it() {
     let mut session = session();
     session.execute("selection.set", json!({"range": "A1:B3"})).unwrap();

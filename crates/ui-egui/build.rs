@@ -15,6 +15,7 @@ use serde_json::Value;
 #[path = "src/craft_fonts_policy.rs"]
 mod craft_fonts_policy;
 
+/// Build script: reads the contributor JSON/TOML and writes generated `credits.rs`, then emits `craft_fonts.rs`; missing or malformed optional inputs warn, while required mode reports build errors.
 fn main() {
     // Read when the script runs: `env!` would keep the path from when the script was compiled,
     // which goes stale if the checkout moves (and a missing file reruns the script every build).

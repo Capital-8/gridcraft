@@ -105,6 +105,7 @@ fn escape_cancels_the_typed_size() {
 }
 
 #[test]
+/// The size list has no filter; clicking 16 applies it, and Down then Enter picks 12.
 fn the_arrow_opens_the_plain_list_of_sizes() {
     let mut h = harness();
     h.get_by_role_and_label(Role::Button, "Font Size").click();

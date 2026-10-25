@@ -127,6 +127,7 @@ fn click(h: &mut Harness, at: Pos2) {
 }
 
 #[test]
+/// The filter button in a replaced heading opens that column's menu without changing the selection; clicking beside it still selects the column.
 fn the_button_in_a_replaced_heading_opens_that_columns_filter_menu() {
     let mut s = session("C20");
     s.execute("home.hideColumns", json!({"cols": "B:B"})).unwrap();

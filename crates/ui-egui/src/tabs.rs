@@ -97,6 +97,7 @@ fn tab_split_handle(app: &mut SheetApp, ui: &mut Ui, split: Rect, bar: (f32, f32
     }
 }
 
+/// Draws the worksheet tab strip: navigation, scroll/reveal, rename/drag/move with optional copy, context menu, new-sheet button, split handle and grid scrollbar.
 pub fn sheet_tabs(app: &mut SheetApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     egui::Panel::bottom("sheet_tabs").exact_size(32.0).frame(egui::Frame::NONE.fill(t.tab_bar)).show(ui, |ui| {
@@ -318,6 +319,7 @@ pub fn sheet_tabs(app: &mut SheetApp, ui: &mut Ui) {
     });
 }
 
+/// Draws status mode/messages, zoom controls/view-mode buttons and selection statistics.
 pub fn status_bar(app: &mut SheetApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     egui::Panel::bottom("status_bar").exact_size(26.0).frame(egui::Frame::NONE.fill(t.status_bar).inner_margin(egui::Margin::symmetric(12, 0))).show(

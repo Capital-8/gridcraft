@@ -141,6 +141,7 @@ impl CaptureGeometry {
         Self::build(raw.viewport_id, &info, raw.screen_rect, raw.max_texture_side, ctx.zoom_factor(), ctx.pixels_per_point())
     }
 
+    /// Builds a `CaptureGeometry` from fresh viewport information. A minimized window has no size; `inner_rect` falls back to the raw screen rect; native scale is multiplied by interface zoom, and a zero surface limit means uncapped.
     fn build(
         viewport_id: egui::ViewportId,
         info: &egui::ViewportInfo,
@@ -229,6 +230,7 @@ impl CaptureGeometry {
     }
 }
 
+/// True only when both width and height are finite and positive.
 fn positive_size(size: &egui::Vec2) -> bool {
     size.x.is_finite() && size.y.is_finite() && size.x > 0.0 && size.y > 0.0
 }
@@ -477,6 +479,7 @@ pub const MAX_QUEUED_SYNTHETIC_BYTES: usize = 8 * 1024 * 1024;
 /// string is plenty for a spreadsheet cell and keeps a burst from exhausting memory).
 pub const MAX_SYNTHETIC_TEXT_BYTES: usize = 1024 * 1024;
 
+/// Bytes charged to one synthetic event: `size_of::<Event>()` plus the payload of a `Text` event.
 fn event_bytes(event: &egui::Event) -> usize {
     std::mem::size_of::<egui::Event>()
         + match event {
@@ -485,6 +488,7 @@ fn event_bytes(event: &egui::Event) -> usize {
         }
 }
 
+/// Saturating totals of queued synthetic events and their charged bytes across every pending batch.
 fn synthetic_usage(app: &SheetApp) -> (usize, usize) {
     app.synthetic
         .iter()
@@ -505,6 +509,7 @@ fn synthetic_budget(app: &SheetApp, extra_events: usize, extra_bytes: usize) -> 
     Ok(())
 }
 
+/// Checks the synthetic-event budget, then queues one pointer move followed by `count` press/release pairs (`count` is at least one).
 fn push_click(app: &mut SheetApp, pos: egui::Pos2, button: egui::PointerButton, count: u32, m: egui::Modifiers) -> Result<(), String> {
     let count = count.max(1) as usize;
     let events = count.saturating_mul(2).saturating_add(1);
@@ -519,6 +524,7 @@ fn push_click(app: &mut SheetApp, pos: egui::Pos2, button: egui::PointerButton, 
     Ok(())
 }
 
+/// Checks the synthetic-event budget, then queues a move, a press, `steps` interpolated moves and a release.
 fn push_drag(app: &mut SheetApp, a: egui::Pos2, b: egui::Pos2, steps: usize, m: egui::Modifiers) -> Result<(), String> {
     let steps = steps.max(1);
     let events = steps.saturating_add(3);
@@ -533,6 +539,7 @@ fn push_drag(app: &mut SheetApp, a: egui::Pos2, b: egui::Pos2, steps: usize, m: 
     Ok(())
 }
 
+/// Checks the synthetic-event budget and queues one key press/release pair.
 fn push_key(app: &mut SheetApp, key: egui::Key, m: egui::Modifiers) -> Result<(), String> {
     let events = 2;
     synthetic_budget(app, events, events * std::mem::size_of::<egui::Event>())?;
@@ -543,6 +550,7 @@ fn push_key(app: &mut SheetApp, key: egui::Key, m: egui::Modifiers) -> Result<()
     Ok(())
 }
 
+/// Rejects text longer than `MAX_SYNTHETIC_TEXT_BYTES`, then queues one `Text` event under the shared queue budget.
 fn push_text(app: &mut SheetApp, text: String) -> Result<(), String> {
     if text.len() > MAX_SYNTHETIC_TEXT_BYTES {
         return Err(format!("text input is {} bytes, over the {MAX_SYNTHETIC_TEXT_BYTES}-byte limit for one event", text.len()));
@@ -553,6 +561,7 @@ fn push_text(app: &mut SheetApp, text: String) -> Result<(), String> {
     Ok(())
 }
 
+/// Queues one pointer-move event under the shared synthetic queue budget.
 fn push_move(app: &mut SheetApp, pos: egui::Pos2) -> Result<(), String> {
     let event = egui::Event::PointerMoved(pos);
     synthetic_budget(app, 1, event_bytes(&event))?;
@@ -571,6 +580,7 @@ fn filter_commands(commands: Vec<Json>, search: Option<&str>) -> Vec<Json> {
     commands.into_iter().filter(|c| has(c, "id") || has(c, "label") || in_menu(c)).collect()
 }
 
+/// Dispatches one control request: commands, inspection, UI state, dialogs, editing, synthetic input, open/save/quit and screenshots. Unknown methods (and unknown command ids) return an error. Immediate answers request a repaint; `ui.screenshot` is admitted asynchronously instead of being answered here.
 pub fn handle(app: &mut SheetApp, ctx: &egui::Context, method: &str, p: &Json) -> Outcome {
     let s = |k: &str| p.get(k).and_then(Json::as_str);
     let f = |k: &str| p.get(k).and_then(Json::as_f64).unwrap_or(0.0) as f32;
@@ -810,6 +820,7 @@ pub fn handle(app: &mut SheetApp, ctx: &egui::Context, method: &str, p: &Json) -
     out
 }
 
+/// Drains queued control requests, drops requests whose client stopped waiting, handles immediate outcomes and admits screenshots, then requests a repaint while synthetic input remains.
 pub fn poll(app: &mut SheetApp, ctx: &egui::Context) {
     let Some(rx) = app.control_rx.take() else { return };
     while let Ok(req) = rx.try_recv() {
@@ -832,6 +843,7 @@ pub fn poll(app: &mut SheetApp, ctx: &egui::Context) {
     }
 }
 
+/// Sends one screenshot rejection carrying the request token.
 fn reject_shot(reply: Sender<ControlResponse>, token: u64, message: impl std::fmt::Display) {
     let _ = reply.send(json!({"ok": false, "error": message.to_string(), "request": token}));
 }
@@ -868,6 +880,7 @@ pub(crate) fn note_capture_geometry(app: &mut SheetApp, geometry: CaptureGeometr
     app.capture_epoch
 }
 
+/// Returns the next screenshot token, wrapping and skipping zero.
 fn next_token(app: &mut SheetApp) -> u64 {
     let mut token = app.shots.token.wrapping_add(1);
     if token == 0 {
@@ -965,6 +978,7 @@ fn admit(app: &mut SheetApp, ctx: &egui::Context, path: Option<String>, reply: S
     ctx.request_repaint();
 }
 
+/// Builds the standard token-carrying timeout reply for a screenshot request.
 fn timeout_reply(message: &str, token: u64) -> Json {
     json!({"ok": false, "error": message, "request": token})
 }
@@ -1089,6 +1103,7 @@ pub fn issue_screenshots(app: &mut SheetApp, ctx: &egui::Context) {
     }
 }
 
+/// Checks that the image has the pixel count its dimensions imply, is within one pixel of the expected size on each axis, and keeps the expected aspect ratio within that rounding.
 fn validate_image(image: &egui::ColorImage, expected: [usize; 2]) -> Result<(), String> {
     let [w, h] = image.size;
     let [ew, eh] = expected;
@@ -1248,6 +1263,7 @@ fn retry_allowed(r: &Shot, now: f64) -> bool {
     r.retries < SCREENSHOT_MAX_RETRIES && now < r.deadline
 }
 
+/// Takes and cancels the request's capture slot, if it has one.
 fn cancel_shot(r: &mut Shot) {
     if let Some(slot) = r.slot.take() {
         slot.cancel();
@@ -1387,6 +1403,7 @@ mod tests {
     }
 
     #[test]
+    /// Checks that oversized click/drag counts are refused without changing already queued batches, that queued input counts toward the budget, and that normal gestures still queue fully.
     fn oversized_pointer_requests_are_refused_and_leave_the_queue_alone() {
         let mut app = test_app();
         let p = egui::pos2(20.0, 20.0);
@@ -1454,6 +1471,7 @@ mod tests {
         out
     }
 
+    /// Returns an egui context initialized by one blank pass at `size` with an 8192-pixel texture limit.
     fn sized_context(size: egui::Vec2) -> egui::Context {
         let ctx = egui::Context::default();
         let raw = egui::RawInput {
@@ -1465,10 +1483,12 @@ mod tests {
         ctx
     }
 
+    /// Returns blank raw input with a screen rect at `size` and an 8192-pixel texture limit.
     fn raw_of(size: egui::Vec2) -> egui::RawInput {
         egui::RawInput { screen_rect: Some(egui::Rect::from_min_size(egui::Pos2::ZERO, size)), max_texture_side: Some(8192), ..Default::default() }
     }
 
+    /// Extracts cloned `ViewportCommand::Screenshot` callbacks from a `FullOutput` for the context's viewport.
     fn screenshot_callbacks(out: &egui::FullOutput, ctx: &egui::Context) -> Vec<egui::ScreenshotCallback> {
         out.viewport_output
             .get(&ctx.viewport_id())
@@ -1495,6 +1515,7 @@ mod tests {
         callbacks
     }
 
+    /// Returns a per-process temporary PNG path after removing any stale file at that path.
     fn temp_png(name: &str) -> std::path::PathBuf {
         let path = std::env::temp_dir().join(format!("gridcraft-shot-{name}-{}.png", std::process::id()));
         let _ = std::fs::remove_file(&path);
@@ -1502,6 +1523,7 @@ mod tests {
     }
 
     #[test]
+    /// Checks rounded physical pixels, expected/retained byte counts, the texture-axis cap, the no-size case and overflow refusal.
     fn capture_geometry_reports_checked_capped_pixels() {
         let geometry = CaptureGeometry {
             viewport_id: egui::ViewportId::ROOT,
@@ -1526,6 +1548,7 @@ mod tests {
     }
 
     #[test]
+    /// Checks that one request beyond `SCREENSHOT_MAX_REQUESTS` is rejected with its token while earlier requests stay queued and do not reply early.
     fn screenshot_admission_stops_on_the_count_budget_without_evicting() {
         let ctx = sized_context(egui::vec2(800.0, 600.0));
         let mut app = test_app();
@@ -1547,6 +1570,7 @@ mod tests {
     }
 
     #[test]
+    /// Three roughly 100 MB path captures hit the aggregate byte limit; the third is rejected and only two requests remain.
     fn screenshot_admission_stops_on_aggregate_bytes_before_the_count() {
         let ctx = sized_context(egui::vec2(5000.0, 5000.0));
         let mut app = test_app();
@@ -1566,6 +1590,7 @@ mod tests {
     }
 
     #[test]
+    /// An unknown-size request reserves the placeholder, issues nothing while settling, then replies once on timeout and releases the reservation.
     fn requests_without_a_size_stay_queued_and_time_out() {
         let ctx = sized_context(egui::Vec2::ZERO);
         let mut app = test_app();
@@ -1585,11 +1610,13 @@ mod tests {
         assert_eq!(app.shots.reserved(), 0, "the placeholder reservation is released");
     }
 
+    /// Counts `RequestPaintWhileHidden` commands in a logic output.
     fn hidden_paints(out: &egui::LogicOutput) -> usize {
         out.viewport_commands.values().flatten().filter(|c| matches!(c, egui::ViewportCommand::RequestPaintWhileHidden)).count()
     }
 
     #[test]
+    /// A queued capture requests a hidden paint; once issued, the screenshot command supplies the paint itself.
     fn a_queued_capture_requests_hidden_paint_until_it_is_issued() {
         let ctx = sized_context(egui::vec2(64.0, 48.0));
         let mut app = test_app();
@@ -1606,6 +1633,7 @@ mod tests {
     }
 
     #[test]
+    /// A minimized request stays queued without requesting hidden paints, because it cannot issue until restored.
     fn a_minimized_capture_does_not_force_hidden_frames_while_it_waits() {
         let ctx = egui::Context::default();
         let mut app = test_app();
@@ -1624,6 +1652,7 @@ mod tests {
     }
 
     #[test]
+    /// The real app harness issues exactly one callback, replies once with the token and dimensions, and releases the reservation.
     fn one_admitted_capture_issues_one_callback_and_replies_once() {
         use egui_kittest::kittest::Queryable as _;
 
@@ -1674,6 +1703,7 @@ mod tests {
     }
 
     #[test]
+    /// Completing callbacks in reverse order replies on each matching token/path and writes each request's own pixels.
     fn out_of_order_completions_reply_on_their_own_request() {
         let ctx = sized_context(egui::vec2(8.0, 8.0));
         let mut app = test_app();
@@ -1710,6 +1740,7 @@ mod tests {
     }
 
     #[test]
+    /// An expired request replies once with a timeout, writes no file and releases its reservation.
     fn a_timed_out_capture_replies_once_and_never_writes() {
         let ctx = sized_context(egui::vec2(64.0, 48.0));
         let mut app = test_app();
@@ -1728,6 +1759,7 @@ mod tests {
     }
 
     #[test]
+    /// A valid image that completes after its deadline gets one timeout reply and is not written.
     fn a_capture_completed_after_its_deadline_writes_nothing() {
         let ctx = sized_context(egui::vec2(64.0, 48.0));
         let mut app = test_app();
@@ -1752,6 +1784,7 @@ mod tests {
     }
 
     #[test]
+    /// Cancelling a request does not reply; a later callback for it is ignored and writes nothing.
     fn a_callback_after_the_request_is_removed_is_inert() {
         let ctx = sized_context(egui::vec2(32.0, 24.0));
         let mut app = test_app();
@@ -1771,6 +1804,7 @@ mod tests {
     }
 
     #[test]
+    /// The first issuance adopts a new geometry, updates the epoch and reservation, spends no retry, and the capture then succeeds.
     fn a_resize_between_admission_and_issuance_does_not_cost_a_retry() {
         let ctx = sized_context(egui::vec2(64.0, 48.0));
         let mut app = test_app();
@@ -1795,6 +1829,7 @@ mod tests {
     }
 
     #[test]
+    /// The reservation is the largest accepted rounded image (11×9×4 bytes for a 10×8 viewport), and that image is accepted.
     fn the_retained_reservation_is_the_slot_bound() {
         let ctx = sized_context(egui::vec2(10.0, 8.0));
         let mut app = test_app();
@@ -1814,6 +1849,7 @@ mod tests {
     }
 
     #[test]
+    /// Oversized images retry within the bounded budget, never write, then report the per-image limit, while the valid peer is written.
     fn an_image_beyond_the_reservation_is_released_without_writing() {
         let ctx = sized_context(egui::vec2(10.0, 8.0));
         let mut app = test_app();
@@ -1856,6 +1892,7 @@ mod tests {
     }
 
     #[test]
+    /// Two `ui` calls in one pass count as one settling frame, and a pass that requests a discard is not counted; only its rerun counts.
     fn settling_counts_one_real_pass_and_skips_a_discarded_one() {
         let ctx = sized_context(egui::vec2(64.0, 48.0));
         let mut app = test_app();
@@ -1880,6 +1917,7 @@ mod tests {
     }
 
     #[test]
+    /// Issuance survives a discard requested after it, the image is written once, and a duplicate callback completion is inert.
     fn a_discard_requested_after_issuance_still_issues_and_writes_once() {
         let ctx = sized_context(egui::vec2(64.0, 48.0));
         let mut app = test_app();
@@ -1913,6 +1951,7 @@ mod tests {
     }
 
     #[test]
+    /// A grow-resize spends one retry, reissues at the new size and then accepts the new image.
     fn an_image_larger_than_the_reservation_retries_like_a_smaller_one() {
         let ctx = sized_context(egui::vec2(10.0, 8.0));
         let mut app = test_app();
@@ -1945,6 +1984,7 @@ mod tests {
     }
 
     #[test]
+    /// Minimize retries reserve unknown-size bytes; only two fit the aggregate budget and stay queued (the rest are reported), and the survivors write after restore.
     fn a_minimize_retry_without_a_size_still_checks_the_aggregate_budget() {
         let ctx = sized_context(egui::vec2(64.0, 48.0));
         let mut app = test_app();
@@ -2026,6 +2066,7 @@ mod tests {
     }
 
     #[test]
+    /// Fresh hidden viewport geometry invalidates the old image, spends one retry, and the reissued image succeeds.
     fn a_hidden_resize_rejects_an_image_issued_before_it_and_reissues() {
         let ctx = sized_context(egui::vec2(64.0, 48.0));
         let mut app = test_app();
@@ -2065,6 +2106,7 @@ mod tests {
     }
 
     #[test]
+    /// Draining four completed captures replies to all of them and permits a new admission.
     fn a_drained_capture_frees_its_slot_for_the_next_admission() {
         let ctx = sized_context(egui::vec2(8.0, 8.0));
         let mut app = test_app();
@@ -2093,6 +2135,7 @@ mod tests {
     }
 
     #[test]
+    /// Uses `screen_rect` when `inner_rect` is absent, applies native scale times zoom, and advances the epoch on a hidden resize.
     fn raw_input_geometry_uses_screen_rect_when_inner_rect_is_absent() {
         // Wayland always omits `inner_rect`; the fresh `RawInput::screen_rect` is the only size.
         let ctx = sized_context(egui::vec2(800.0, 600.0));
@@ -2126,6 +2169,7 @@ mod tests {
     }
 
     #[test]
+    /// Minimized geometry has no size and reserves unknown bytes; restoring at the same size still changes the epoch.
     fn minimized_geometry_has_no_size_and_restore_bumps_the_epoch() {
         let ctx = egui::Context::default();
         let mut app = test_app();
@@ -2160,6 +2204,7 @@ mod tests {
     }
 
     #[test]
+    /// Switching documents before issuance cancels the request once with a document-changed error and writes nothing.
     fn a_document_switch_before_issuance_cancels_without_writing() {
         let ctx = sized_context(egui::vec2(64.0, 48.0));
         let mut app = test_app();
@@ -2180,6 +2225,7 @@ mod tests {
     }
 
     #[test]
+    /// Switching documents after issuance rejects the completed image once and writes nothing.
     fn a_document_switch_after_issuance_rejects_the_completed_image() {
         let ctx = sized_context(egui::vec2(64.0, 48.0));
         let mut app = test_app();
@@ -2199,6 +2245,7 @@ mod tests {
     }
 
     #[test]
+    /// A request bound to another viewport is rejected once with a viewport error and writes nothing.
     fn a_completion_for_another_viewport_is_rejected() {
         let ctx = sized_context(egui::vec2(32.0, 24.0));
         let mut app = test_app();
@@ -2219,6 +2266,7 @@ mod tests {
     }
 
     #[test]
+    /// Accepts one-pixel rounding on a single axis, but rejects opposite-axis deviation, aspect distortion and more than one pixel of error.
     fn validate_image_rejects_distortion_but_allows_one_pixel_rounding() {
         let image = |w: usize, h: usize| egui::ColorImage::filled([w, h], egui::Color32::RED);
         assert!(validate_image(&image(100, 100), [100, 100]).is_ok());
@@ -2230,6 +2278,7 @@ mod tests {
     }
 
     #[test]
+    /// Checks the encoding working-set threshold, the base64 reply cap, and the retained-plus-encoding peak budget.
     fn encoding_working_set_is_bounded_for_admitted_captures() {
         assert!(encoding_working_bytes([8191, 2048], false).expect("checked") <= SCREENSHOT_MAX_ENCODING_BYTES);
         assert!(encoding_working_bytes([8192, 8192], false).expect("checked") > SCREENSHOT_MAX_ENCODING_BYTES);
@@ -2244,6 +2293,7 @@ mod tests {
     }
 
     #[test]
+    /// An oversized base64 capture is refused with nothing reserved, while the same capture as a path is admitted.
     fn base64_capture_over_the_encoding_budget_is_rejected_before_admission() {
         let ctx = sized_context(egui::vec2(5000.0, 4000.0));
         let mut app = test_app();
@@ -2267,6 +2317,7 @@ mod tests {
     }
 
     #[test]
+    /// Oversized text, repeated maximum texts, keys and moves are refused without changing the queue, and the byte/event limits are both enforced.
     fn synthetic_text_key_and_move_producers_honour_the_queue_budget() {
         let ctx = egui::Context::default();
         let mut app = test_app();
