@@ -1025,6 +1025,7 @@ impl Calc {
         if circ.is_empty() {
             return Vec::new();
         }
+        let n = circ.len();
         let index: HashMap<Key, usize> = circ.iter().enumerate().map(|(i, k)| (*k, i)).collect();
         // Edges from a cell to the `#CIRC!` formulas that read it; loops are the same either way.
         let mut deps = Vec::new();
