@@ -927,6 +927,18 @@ impl Host for PassHost<'_> {
     }
 }
 
+/// Pops one finished component off Tarjan's stack, labelling its nodes with `comp_index`. The
+/// component is everything up to and including `root`.
+fn pop_component(stack: &mut Vec<usize>, on_stack: &mut [bool], comp: &mut [usize], comp_index: usize, root: usize) {
+    while let Some(w) = stack.pop() {
+        on_stack[w] = false;
+        comp[w] = comp_index;
+        if w == root {
+            break;
+        }
+    }
+}
+
 /// Strongly connected components of a graph given as adjacency lists (Tarjan, iterative): each
 /// node's component index, and the number of nodes in each component.
 fn components(edges: &[Vec<usize>]) -> (Vec<usize>, Vec<usize>) {
@@ -965,13 +977,7 @@ fn components(edges: &[Vec<usize>]) -> (Vec<usize>, Vec<usize>) {
                 low[u] = low[u].min(low[v]);
             }
             if low[v] == num[v] {
-                while let Some(w) = stack.pop() {
-                    on_stack[w] = false;
-                    comp[w] = comps;
-                    if w == v {
-                        break;
-                    }
-                }
+                pop_component(&mut stack, &mut on_stack, &mut comp, comps, v);
                 comps += 1;
             }
         }
