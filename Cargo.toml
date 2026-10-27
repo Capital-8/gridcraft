@@ -67,9 +67,11 @@ craft-window = { version = "0.1.0", git = "https://github.com/storytold/craft-li
 unsafe_code = "forbid"
 
 [workspace.lints.clippy]
+cognitive_complexity = "deny"
+too_many_arguments = "deny"
+wildcard_imports = "deny"
 dbg_macro = "warn"
 todo = "warn"
-too_many_arguments = "allow"
 type_complexity = "allow"
 
 [profile.dev.package."*"]
